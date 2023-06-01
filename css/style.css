@@ -73,6 +73,18 @@ body {
     height: 50px;
 }
 
+/* media queries modal box 450px and down */
+@media screen and (max-width: 450px) {
+    .modal-box {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+
+    .user-section > h2 {
+        text-align: center;
+    }
+}
+
 @keyframes animatetop {
     from {
         top: -300px;
