@@ -6,7 +6,7 @@ const modal = document.querySelector("#myModal");
 
 // Close the modal when the user clicks outside of it
 window.onclick = function (event) {
-    if (event.target == modal) {
+    if (event.target === modal) {
         modal.style.display = "none";
     }
 };
@@ -14,79 +14,98 @@ window.onclick = function (event) {
 // Fetch and display the list of users when the window loads
 window.onload = async function () {
     try {
-        // Fetch the list of users from the API
-        const res = await fetch(`${BASE_URL}/api/users`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const data = await fetchUsersData();
 
-        // Parse the response JSON and extract the data
-        const data = (await res.json()).data;
-
-        // Loop through the user data and create user elements
         data.forEach((user) => {
-            const { id, email, first_name, last_name, avatar } = user;
-
-            // Create a user div element
-            const userDiv = document.createElement("div");
-            userDiv.classList.add("user");
-
-            // Add an onclick event listener to the user div
-            userDiv.onclick = async function () {
-                try {
-                    // Fetch the user details from the API
-                    const userRes = await fetch(`${BASE_URL}/api/users/${id}`, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    });
-
-                    // Parse the response JSON and extract the user data
-                    const userData = (await userRes.json()).data;
-
-                    // Show the modal
-                    modal.style.display = "flex";
-
-                    // Set the user details in the modal
-                    document.querySelector(
-                        "#name"
-                    ).textContent = `${userData.first_name} ${userData.last_name}`;
-                    document.querySelector("#email").textContent = email;
-                    document.querySelector("#id").textContent = `Id: ${id}`;
-
-                    // Change the image source in the modal
-                    document.querySelector("#img").src = avatar;
-
-                    //add alt tag to image
-                    document.querySelector(
-                        "#img"
-                    ).alt = `${userData.first_name} ${userData.last_name}`;
-                } catch (error) {
-                    console.error("Failed to fetch user details:", error);
-                }
-            };
-
-            // Create an img element and set its source
-            const img = document.createElement("img");
-            img.src = avatar;
-
-            // Append the img element to the user div
-            userDiv.appendChild(img);
-
-            // Create a p element and set its content
-            const p = document.createElement("p");
-            p.innerHTML = `${first_name} ${last_name}`;
-
-            // Append the p element to the user div
-            userDiv.appendChild(p);
-
-            // Append the user div to the list container
+            const userDiv = createUserDiv(user);
             document.querySelector("#list").appendChild(userDiv);
         });
     } catch (error) {
         console.error("Failed to fetch users:", error);
     }
 };
+
+// Fetches the list of users from the API
+async function fetchUsersData() {
+    const res = await fetch(`${BASE_URL}/api/users`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    const responseJson = await res.json();
+    return responseJson.data;
+}
+
+// Creates a user div element and sets its content
+function createUserDiv(user) {
+    const { id, email, first_name, last_name, avatar } = user;
+
+    const userDiv = document.createElement("div");
+    userDiv.classList.add("user");
+
+    userDiv.onclick = async function () {
+        try {
+            const userData = await fetchUserDetails(id);
+
+            showUserDetailsModal(userData);
+        } catch (error) {
+            console.error("Failed to fetch user details:", error);
+        }
+    };
+
+    const img = createUserImage(avatar);
+    const p = createUserParagraph(`${first_name} ${last_name}`);
+    const span = document.createElement("span");
+    const arrow = createUserParagraph(">");
+    arrow.classList.add("arrow");
+
+    userDiv.appendChild(img);
+    userDiv.appendChild(p);
+    userDiv.appendChild(arrow);
+
+    return userDiv;
+}
+
+// Fetches the user details from the API
+async function fetchUserDetails(userId) {
+    const userRes = await fetch(`${BASE_URL}/api/users/${userId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    const userResponseJson = await userRes.json();
+    return userResponseJson.data;
+}
+
+// Show the modal with user details
+function showUserDetailsModal(userData) {
+    modal.style.display = "flex";
+
+    document.querySelector(
+        "#name"
+    ).textContent = `${userData.first_name} ${userData.last_name}`;
+    document.querySelector("#email").textContent = userData.email;
+    document.querySelector("#id").textContent = `Id: ${userData.id}`;
+    document.querySelector("#img").src = userData.avatar;
+    document.querySelector(
+        "#img"
+    ).alt = `${userData.first_name} ${userData.last_name}`;
+}
+
+// Creates an img element and sets its source
+function createUserImage(avatar) {
+    const img = document.createElement("img");
+    img.src = avatar;
+    return img;
+}
+
+// Creates a p element and sets its content
+function createUserParagraph(text) {
+    const p = document.createElement("p");
+    p.innerHTML = text;
+    return p;
+}

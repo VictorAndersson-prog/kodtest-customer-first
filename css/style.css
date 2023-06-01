@@ -73,6 +73,14 @@ body {
     height: 50px;
 }
 
+.arrow {
+    margin-left: auto;
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 18px;
+}
+
 /* media queries modal box 450px and down */
 @media screen and (max-width: 450px) {
     .modal-box {
